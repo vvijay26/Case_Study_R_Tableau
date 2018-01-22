@@ -84,9 +84,28 @@ length(unique(master_frame$company_permalink))
 #########Checkpoint 1 End#################
 ##########################################
 
-
-
 ##########################################
 #######Checkpoint 2 Start#################
 ##########################################
 
+#2.1
+#1 Average funding of each type
+master_frame_rollup_raised_amt <- setNames(aggregate(master_frame$raised_amount_usd, 
+                     by=list(master_frame$funding_round_type), 
+                     FUN=mean, na.rm="TRUE"),
+                    c("Funding_Round_Type","Raised_Amount_USD"))
+
+master_frame_funding_type <- subset(master_frame_rollup_raised_amt,
+                                    master_frame_rollup_raised_amt$Funding_Round_Type
+                                    == "venture"|
+                                      master_frame_rollup_raised_amt$Funding_Round_Type
+                                    == "seed"|
+                                    master_frame_rollup_raised_amt$Funding_Round_Type
+                                    == "angel"|
+                                      master_frame_rollup_raised_amt$Funding_Round_Type
+                                    == "private_equity")
+
+
+##########################################
+#######Checkpoint 2 End###################
+##########################################
