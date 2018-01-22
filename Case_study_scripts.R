@@ -1,5 +1,12 @@
 #Case Study
 
+##########################################
+#######Checkpoint 1 Start#################
+##########################################
+
+#Clear the Environment - To avoid any testing issues.
+rm(list=ls())
+
 # Set working directory - physical location to read and write files from
 setwd("C:/pgdds/Course 1/Project")
 
@@ -23,6 +30,13 @@ str(rounds2)
 #1.1- Data cleaning
 #1 - How many unique companies are present in rounds2? 
 # Answer - 66368
+
+# tolower is used to make the permalink case 
+# insensitive (as in the files provided, the casse does not match)
+
+rounds2$company_permalink <- tolower(rounds2$company_permalink)
+companies$permalink <- tolower(companies$permalink)
+
 length(unique(rounds2$company_permalink))
 
 #2 - How many unique companies are present in companies?
@@ -39,12 +53,6 @@ companies$permalink
 # We can achieve this through merging the 2 files (Left outer - Taking all rows 
 # from Rounds2) and then checking for "NA" # values in the columns populated 
 # from Companies dataframe.
-
-# tolower is used to make the permalink case 
-# insensitive (as in the files provided, the casse does not match)
-
-rounds2$company_permalink <- tolower(rounds2$company_permalink)
-companies$permalink <- tolower(companies$permalink)
 
 #all.x ensures all rows of rounds2 are present even if there is no matching 
 #permalink in companies - like a left outer join of sql
@@ -71,4 +79,14 @@ length(master_frame$company_permalink)
 
 #Distinct companies
 length(unique(master_frame$company_permalink))
+
+##########################################
+#########Checkpoint 1 End#################
+##########################################
+
+
+
+##########################################
+#######Checkpoint 2 Start#################
+##########################################
 
