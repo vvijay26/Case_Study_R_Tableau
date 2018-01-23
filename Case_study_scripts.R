@@ -109,3 +109,59 @@ master_frame_funding_type <- subset(master_frame_rollup_raised_amt,
 ##########################################
 #######Checkpoint 2 End###################
 ##########################################
+
+
+##########################################
+########Checkpoint 3 Start################
+##########################################
+
+# 3.1 Top nine countries which have received the highest total 
+# funding (across ALL sectors for the chosen investment type)
+
+#Populate Chosen_type variable with funding type and raised amount
+#This code is re-usable for other investment types, just replace the "venture" 
+# to some other type as needed for future use.
+Chosen_type <- subset(master_frame_funding_type,master_frame_funding_type$Funding_Round_Type
+       == "venture")
+
+#Next step is to subset the master_frame on funding type (in this case "venture")
+venture_records <- subset(master_frame,
+                          master_frame$funding_round_type==as.character(Chosen_type[1]))
+
+#Next step is to aggregate the venture funding amounts by country
+venture_records_by_country <- setNames(aggregate(venture_records$raised_amount_usd, by=list(venture_records$country_code), FUN=sum,na.rm=TRUE),c("Country_Code","Raised_Amount_USD"))
+
+#Next step is to remove records that have blank country_type
+venture_records_by_country_non_blanks <- subset(venture_records_by_country,venture_records_by_country$Country_Code!="")
+
+#We use arrange function from plyr package, as per CRAN community, this seems to
+# be the fastest way to sort a data.frame
+
+#Below packages need to be installed (if not available, one time activity)
+# install.packages(pkgs="plyr")    
+# library(plyr)
+
+#Sort the venture funding amounts in descending order by country
+venture_records_by_country_non_blanks_desc_amt <- arrange(venture_records_by_country_non_blanks,desc(Raised_Amount_USD))
+
+#Populate top9 with the top 9 countries (first goal of the analysis)
+top9 <- head(venture_records_by_country_non_blanks_desc_amt,n=9)
+
+#Next step is to identify the top 3 english speaking countries
+# (second goal of the analysis)
+
+#From the link http://www.emmir.org/fileadmin/user_upload/admission/Countries_where_English_is_an_official_language.pdf
+# We can see that usa, united kingdom and india are the top 3 countries
+#USA	-	  y
+#CHN	-	  n
+#GBR	-		y
+#IND	-		y
+#CAN	-		y
+#FRA	-		n
+#ISR	-		n
+#DEU	-		n
+#JPN	-		n
+
+#We have hardcoded the country codes as per TA guidance 
+#(We can modify this code to take in a dataframe and compare, later)
+top3 <- subset(top9,top9$Country_Code == "USA"|top9$Country_Code == "GBR"|top9$Country_Code == "IND")
