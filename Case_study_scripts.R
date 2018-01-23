@@ -137,7 +137,7 @@ venture_records_by_country_non_blanks <- subset(venture_records_by_country,ventu
 #We use arrange function from plyr package, as per CRAN community, this seems to
 # be the fastest way to sort a data.frame
 
-#Below packages need to be installed (if not available, one time activity)
+#Below packages need to be installed (if not available, a one time activity)
 # install.packages(pkgs="plyr")    
 # library(plyr)
 
@@ -185,3 +185,54 @@ eng_speaking_countries_sorted <- arrange(eng_speaking_countries,desc(eng_speakin
 #1          USA      422510842796             y
 #2          GBR       20245627416             y
 #3          IND       14391858718             y
+
+##########################################
+#######Checkpoint 3 End###################
+##########################################
+
+
+##########################################
+########Checkpoint 4 Start################
+##########################################
+
+#4.1.	Extract the primary sector of each category list from the category_list column
+
+#We use the str_split_fixed function from stringr package to split
+# the category_list into primary category (keep the first category)
+# Since pipe - | is a special character, it needs to be escaped
+# The primary category is added as the 16th column in master_frame
+
+library(stringr)
+
+master_frame$primary_category <- str_split_fixed(master_frame$category_list, 
+                                                 "\\|", 3)[,1]
+
+#4.2 2.	Use the mapping file 'mapping.csv' to map each primary sector to 
+#one of the eight main sectors (Note that ‘Others’ is also considered 
+# one of the main sectors)
+
+#Step 1 - load the mapping file to a data.frame
+#check.names=FALSE is required since there are special characters like
+# comma (,), Ampersand (&), Slash (/) etc. in the csv file
+mapping <- read.csv(file="mapping.csv", stringsAsFactors = FALSE,sep=",",check.names=FALSE)
+
+# Not required - just for future use<ignore> - mapping$X <- NULL
+
+#lapply to get as list
+mapping$sector_names <- lapply(apply(mapping, 1, function(x)which(x>0)), names)
+
+
+#----test code-start ---delete----
+master_frame$primary_category
+#-----test code end - delete -----
+
+#convert case on category in both master_Frame and mapping dataframe
+master_frame$primary_category <- tolower(master_frame$primary_category)
+mapping$category_list <- tolower(mapping$category_list)
+#Merge with master_frame on primary_Category to get an additional column on sector
+# in master_frame
+master_frame2 <- merge(master_frame,mapping,by.x = "primary_category", 
+      by.y="category_list", all.x = TRUE)
+##########################################
+#######Checkpoint 4 End###################
+##########################################
