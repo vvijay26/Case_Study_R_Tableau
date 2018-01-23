@@ -162,6 +162,26 @@ top9 <- head(venture_records_by_country_non_blanks_desc_amt,n=9)
 #DEU	-		n
 #JPN	-		n
 
-#We have hardcoded the country codes as per TA guidance 
-#(We can modify this code to take in a dataframe and compare, later)
-top3 <- subset(top9,top9$Country_Code == "USA"|top9$Country_Code == "GBR"|top9$Country_Code == "IND")
+#Create a dataframe for english speaking countries
+#As a sample, 4 countries are present, can be increased if necessary
+country_name <- c("USA","CHN","GBR","IND")
+eng_countries<- c("y","n","y","y")
+eng_speaking <- data.frame(country_name,eng_countries)
+
+#Merge the top9 countries (With highest venture funding)
+# with eng_speaking data frame
+# Countries are english speaking or not based on eng_speaking$eng_countries
+merged_countries <- merge(top9, eng_speaking, by.x = "Country_Code", 
+                      by.y="country_name")
+
+#Filter english speaking countries alone
+eng_speaking_countries <- subset(merged_countries,merged_countries$eng_countries =="y")
+
+#Sort the output (Descending order of Venture funding by country)
+eng_speaking_countries_sorted <- arrange(eng_speaking_countries,desc(eng_speaking_countries$Raised_Amount_USD))
+
+#output of eng_speaking_countries_sorted  
+#Country_Code Raised_Amount_USD eng_countries
+#1          USA      422510842796             y
+#2          GBR       20245627416             y
+#3          IND       14391858718             y
