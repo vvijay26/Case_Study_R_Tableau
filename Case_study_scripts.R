@@ -139,7 +139,7 @@ venture_records_by_country_non_blanks <- subset(venture_records_by_country,ventu
 
 #Below packages need to be installed (if not available, a one time activity)
 # install.packages(pkgs="plyr")    
-# library(plyr)
+library(plyr)
 
 #Sort the venture funding amounts in descending order by country
 venture_records_by_country_non_blanks_desc_amt <- arrange(venture_records_by_country_non_blanks,desc(Raised_Amount_USD))
@@ -267,6 +267,7 @@ master_frame3 <- subset(master_frame2,master_frame2$funding_round_type==FT)
 #english speaking countries (using dataframe eng_speaking_countries_sorted)
 # All this is done thru loop to scale in future (suppose analysis..
 # ..needs to be done for top 5 countries etc., it can be easily done
+#Similar code can be used at other places (written as for to make it clear)
 for( i in 1:nrow(eng_speaking_countries_sorted) ){
   nam <- paste("D", i, sep = "")
   df <- data.frame(subset(master_frame3,master_frame3$country_code==eng_speaking_countries_sorted[i, 1]),stringsAsFactors = FALSE)
@@ -277,5 +278,98 @@ for( i in 1:nrow(eng_speaking_countries_sorted) ){
 #The following 2 steps remain -
 #•	The total number (or count) of investments for each main sector 
 #   in a separate column
-
 #•	The total amount invested in each main sector in a separate column
+
+#!!!Since some categories like Analytics have typo in mapping.csv, 
+# (present as "A0lytics"), hence the sector will be NA for such records.
+# Replacing them with Blanks_updated (to differentiate from Blanks)
+D1$sector_names[is.na(D1$sector_names)] <- "Blanks_updated"
+D2$sector_names[is.na(D2$sector_names)] <- "Blanks_updated"
+D3$sector_names[is.na(D3$sector_names)] <- "Blanks_updated"
+
+# let's create new Dataframes for each of the 3 dataframes to store
+# aggregate by sectors. Later we can merge it to D1, D2, D3
+
+D1_group_by_sector <-  setNames(aggregate(D1$raised_amount_usd, 
+                                          by=list(D1$sector_names), 
+                                          FUN=sum, na.rm="TRUE"),
+                                c("sector_names","Raised_Amount_USD"))
+
+D1_count_by_sector <- setNames(data.frame(table(D1$sector_names)),
+                               c("sector_names","count_of_inv"))
+
+#If this needs to reflect in the D1 dataframe, we can merge on Main_Sector
+D1 <- merge(D1,D1_group_by_sector,by="sector_names", all.x = TRUE)
+D1 <- merge(D1,D1_count_by_sector,by="sector_names", all.x = TRUE)
+
+#Similarly for D2 and D3
+D2_group_by_sector <-  setNames(aggregate(D2$raised_amount_usd, 
+                                          by=list(D2$sector_names), 
+                                          FUN=sum, na.rm="TRUE"),
+                                c("sector_names","Raised_Amount_USD"))
+
+D2_count_by_sector <- setNames(data.frame(table(D2$sector_names)),
+                               c("sector_names","count_of_inv"))
+
+D2 <- merge(D2,D2_group_by_sector,by="sector_names", all.x = TRUE)
+D2 <- merge(D2,D2_count_by_sector,by="sector_names", all.x = TRUE)
+
+D3_group_by_sector <-  setNames(aggregate(D3$raised_amount_usd, 
+                                          by=list(D3$sector_names), 
+                                          FUN=sum, na.rm="TRUE"),
+                                c("sector_names","Raised_Amount_USD"))
+
+D3_count_by_sector <- setNames(data.frame(table(D3$sector_names)),
+                               c("sector_names","count_of_inv"))
+
+D3 <- merge(D3,D3_group_by_sector,by="sector_names", all.x = TRUE)
+D3 <- merge(D3,D3_count_by_sector,by="sector_names", all.x = TRUE)
+
+#D1,D2,D3 are the 3 dataframes for each of the top 3
+# english speaking countries for FT ("Venture") type.
+# They contain all the columns of master_frame 
+# + the primary category
+# + the main sector
+# + the total count of investments for each main sector in a separate column
+# + the total amount invested in each main sector in a separate column
+
+
+##########################################
+#######Checkpoint 5 End###################
+##########################################
+
+
+##########################################
+########Checkpoint 6 Start################
+##########################################
+
+# Code to be added - Pending
+
+##########################################
+#######Checkpoint 6 End###################
+##########################################
+
+
+#-----***Write Unit Tests***---------
+#These tests are written by analysing the data of companies
+# and rounds2 using excel and then populating certain constants.
+# These constants are then compared with the output of the R code 
+# above. If they match, then "SUCCESS" else "FAILURE"
+# These kind of tests ensure that any code change above (say done
+# for performance or formatting etc.) doesnt change the expected
+# results.
+
+## !*!*!*!*!*!*! MORE TESTS TO BE ADDED  !*!*!*!*!*!*!
+
+# IND total 14391858718
+# GBR total 20245627416.00
+# USA total 422510842796.00
+
+l = ls()
+if (sum(D1$raised_amount_usd,na.rm = TRUE) == 422510842796
+    & sum(D2$raised_amount_usd,na.rm = TRUE) == 20245627416
+    & sum(D3$raised_amount_usd,na.rm = TRUE) == 14391858718) {
+  cat('Raised amounts for D1/D2/D3 dataframe look fine!!!')
+} else {
+  cat('!!!****ISSUE****!!!')
+}
