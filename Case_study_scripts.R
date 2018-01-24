@@ -231,3 +231,51 @@ master_frame2 <- merge(master_frame,mapping,by.x = "primary_category",
 ##########################################
 #######Checkpoint 4 End###################
 ##########################################
+
+
+##########################################
+########Checkpoint 5 Start################
+##########################################
+
+#Data extracted till now -
+# Dataframe with companys main sector mapped - master_frame2
+# Top 3 english speaking countries - eng_speaking_countries_sorted (usa/gbr/ind)
+# Funding type - Venture (the below command will also extract it)
+master_frame_funding_type[which(master_frame_funding_type$Raised_Amount_USD >5000000 & master_frame_funding_type$Raised_Amount_USD < 15000000),][1,1]
+
+#As part of checkpoint 5, Now, the aim is to find out the most 
+#heavily invested main sectors in each of the three countries 
+#(for funding type FT and investments range of 5-15 M USD).
+
+#	Create three separate data frames D1, D2 and D3 for each 
+#of the three countries containing the observations of funding 
+#type <FT> falling within the 5-15 million USD range. The 
+#three data frames should contain:
+#•	All the columns of the master_frame along with the primary sector and the main sector
+#•	The total number (or count) of investments for each main sector in a separate column
+#•	The total amount invested in each main sector in a separate column
+
+#Store funding type in FT variable
+FT <- master_frame_funding_type[which(master_frame_funding_type$Raised_Amount_USD >5000000 & master_frame_funding_type$Raised_Amount_USD < 15000000),][1,1]
+
+#Subset master_frame2(with orimary sector info) into only FT type
+# and store in master_frame3
+master_frame3 <- subset(master_frame2,master_frame2$funding_round_type==FT)
+
+#Create D1, D2 and D3 data frames dynamically and subset
+#the master_frame3 into D1, D2 and D3 depending on top 3 
+#english speaking countries (using dataframe eng_speaking_countries_sorted)
+# All this is done thru loop to scale in future (suppose analysis..
+# ..needs to be done for top 5 countries etc., it can be easily done
+for( i in 1:nrow(eng_speaking_countries_sorted) ){
+  nam <- paste("D", i, sep = "")
+  df <- data.frame(subset(master_frame3,master_frame3$country_code==eng_speaking_countries_sorted[i, 1]),stringsAsFactors = FALSE)
+  df[,17:25]<- NULL #Removing columns from mapping.csv as they are not reqd
+  assign(nam,df)
+}
+
+#The following 2 steps remain -
+#•	The total number (or count) of investments for each main sector 
+#   in a separate column
+
+#•	The total amount invested in each main sector in a separate column
