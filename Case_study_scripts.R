@@ -216,15 +216,9 @@ master_frame$primary_category <- str_split_fixed(master_frame$category_list,
 # comma (,), Ampersand (&), Slash (/) etc. in the csv file
 mapping <- read.csv(file="mapping.csv", stringsAsFactors = FALSE,sep=",",check.names=FALSE)
 
-# Not required - just for future use<ignore> - mapping$X <- NULL
+#Add sector names in mapping file as a column
 
-#lapply to get as list
-mapping$sector_names <- lapply(apply(mapping, 1, function(x)which(x>0)), names)
-
-
-#----test code-start ---delete----
-master_frame$primary_category
-#-----test code end - delete -----
+mapping$sector_names <- names(mapping)[-1][apply(mapping[2:10], 1, function(x) which(x=="1"))]
 
 #convert case on category in both master_Frame and mapping dataframe
 master_frame$primary_category <- tolower(master_frame$primary_category)
@@ -233,6 +227,7 @@ mapping$category_list <- tolower(mapping$category_list)
 # in master_frame
 master_frame2 <- merge(master_frame,mapping,by.x = "primary_category", 
       by.y="category_list", all.x = TRUE)
+
 ##########################################
 #######Checkpoint 4 End###################
 ##########################################
