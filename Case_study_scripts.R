@@ -26,6 +26,7 @@ companies <- read.table(
   comment.char = "",
   quote = ""
 )
+
 rounds2 <-
   read.csv(file = "rounds2.csv",
            stringsAsFactors = FALSE,
@@ -33,6 +34,7 @@ rounds2 <-
 
 # Check structure of the 2 dataframes
 str(companies)
+
 str(rounds2)
 
 #Case Study questions
@@ -44,6 +46,7 @@ str(rounds2)
 # insensitive (as in the files provided, the casse does not match)
 
 rounds2$company_permalink <- tolower(rounds2$company_permalink)
+
 companies$permalink <- tolower(companies$permalink)
 
 length(unique(rounds2$company_permalink))
@@ -203,7 +206,9 @@ top9 <- head(venture_records_by_country_non_blanks_desc_amt, n = 9)
 #Create a dataframe for english speaking countries
 #As a sample, 4 countries are present, can be increased if necessary
 country_name <- c("USA", "CHN", "GBR", "IND")
+
 eng_countries <- c("y", "n", "y", "y")
+
 eng_speaking <- data.frame(country_name, eng_countries)
 
 #Merge the top9 countries (With highest venture funding)
@@ -266,14 +271,21 @@ mapping <-
   )
 
 #Add sector names in mapping file as a column
+# Another way to achieve this is by using "gather" function (needs tidyr package)
+# mapping_new <- gather(mapping, sector, value, "Automotive & Sports":"Social, Finance, Analytics, Advertising")
+# mapping_new <- subset(mapping_new,mapping_new$value == "1")
+# mapping_new[,3] <- NULL
 
 mapping$sector_names <-
   names(mapping)[-1][apply(mapping[2:10], 1, function(x)
     which(x == "1"))]
+mapping[, 2:10] <-
+  NULL #Removing wide columns from mapping.csv as they are not reqd anymore
 
 #convert case on category in both master_Frame and mapping dataframe
 master_frame$primary_category <-
   tolower(master_frame$primary_category)
+
 mapping$category_list <- tolower(mapping$category_list)
 #Merge with master_frame on primary_Category to get an additional column on sector
 # in master_frame
@@ -302,7 +314,7 @@ master_frame2 <-
 master_frame_funding_type[which(
   master_frame_funding_type$Raised_Amount_USD > 5000000 &
     master_frame_funding_type$Raised_Amount_USD < 15000000
-), ][1, 1]
+),][1, 1]
 
 #As part of checkpoint 5, Now, the aim is to find out the most
 #heavily invested main sectors in each of the three countries
@@ -321,7 +333,7 @@ FT <-
   master_frame_funding_type[which(
     master_frame_funding_type$Raised_Amount_USD > 5000000 &
       master_frame_funding_type$Raised_Amount_USD < 15000000
-  ), ][1, 1]
+  ),][1, 1]
 
 #Subset master_frame2(with orimary sector info) into only FT type
 # and store in master_frame3
@@ -344,8 +356,6 @@ for (i in 1:nrow(eng_speaking_countries_sorted)) {
       ),
       stringsAsFactors = FALSE
     )
-  df[, 17:25] <-
-    NULL #Removing columns from mapping.csv as they are not reqd
   assign(nam, df)
 }
 
@@ -358,7 +368,9 @@ for (i in 1:nrow(eng_speaking_countries_sorted)) {
 # (present as "A0lytics"), hence the sector will be NA for such records.
 # Replacing them with Blanks_updated (to differentiate from Blanks)
 D1$sector_names[is.na(D1$sector_names)] <- "Blanks_updated"
+
 D2$sector_names[is.na(D2$sector_names)] <- "Blanks_updated"
+
 D3$sector_names[is.na(D3$sector_names)] <- "Blanks_updated"
 
 # let's create new Dataframes for each of the 3 dataframes to store
@@ -378,8 +390,10 @@ D1_count_by_sector <- setNames(data.frame(table(D1$sector_names)),
                                c("sector_names", "count_of_inv"))
 
 #If this needs to reflect in the D1 dataframe, we can merge on Main_Sector
-D1 <- merge(D1, D1_group_by_sector, by = "sector_names", all.x = TRUE)
-D1 <- merge(D1, D1_count_by_sector, by = "sector_names", all.x = TRUE)
+D1 <-
+  merge(D1, D1_group_by_sector, by = "sector_names", all.x = TRUE)
+D1 <-
+  merge(D1, D1_count_by_sector, by = "sector_names", all.x = TRUE)
 
 #Similarly for D2 and D3
 D2_group_by_sector <-  setNames(
@@ -395,8 +409,11 @@ D2_group_by_sector <-  setNames(
 D2_count_by_sector <- setNames(data.frame(table(D2$sector_names)),
                                c("sector_names", "count_of_inv"))
 
-D2 <- merge(D2, D2_group_by_sector, by = "sector_names", all.x = TRUE)
-D2 <- merge(D2, D2_count_by_sector, by = "sector_names", all.x = TRUE)
+D2 <-
+  merge(D2, D2_group_by_sector, by = "sector_names", all.x = TRUE)
+
+D2 <-
+  merge(D2, D2_count_by_sector, by = "sector_names", all.x = TRUE)
 
 D3_group_by_sector <-  setNames(
   aggregate(
@@ -411,8 +428,11 @@ D3_group_by_sector <-  setNames(
 D3_count_by_sector <- setNames(data.frame(table(D3$sector_names)),
                                c("sector_names", "count_of_inv"))
 
-D3 <- merge(D3, D3_group_by_sector, by = "sector_names", all.x = TRUE)
-D3 <- merge(D3, D3_count_by_sector, by = "sector_names", all.x = TRUE)
+D3 <-
+  merge(D3, D3_group_by_sector, by = "sector_names", all.x = TRUE)
+
+D3 <-
+  merge(D3, D3_count_by_sector, by = "sector_names", all.x = TRUE)
 
 #D1,D2,D3 are the 3 dataframes for each of the top 3
 # english speaking countries for FT ("Venture") type.
@@ -449,7 +469,7 @@ D3 <- merge(D3, D3_count_by_sector, by = "sector_names", all.x = TRUE)
 # results.
 
 ## !*!*!*!*!*!*! MORE TESTS TO BE ADDED  !*!*!*!*!*!*!
-#
+# For Venture funding type
 # IND total 14391858718
 # GBR total 20245627416.00
 # USA total 422510842796.00
