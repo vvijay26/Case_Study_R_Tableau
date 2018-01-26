@@ -24,6 +24,7 @@ companies <- read.table(
   header = TRUE,
   fill = TRUE,
   comment.char = "",
+  stringsAsFactors = FALSE,
   quote = ""
 )
 
@@ -272,13 +273,14 @@ mapping <-
 
 #Add sector names in mapping file as a column
 # Another way to achieve this is by using "gather" function (needs tidyr package)
-# mapping_new <- gather(mapping, sector, value, "Automotive & Sports":"Social, Finance, Analytics, Advertising")
-# mapping_new <- subset(mapping_new,mapping_new$value == "1")
-# mapping_new[,3] <- NULL
+# mapping_new <- gather(data = mapping, key = sector, value = value, "Automotive & Sports":"Social, Finance, Analytics, Advertising")
+# mapping_new <- subset(mapping_new,mapping_new$value == "1")  'or' mapping_new <- mapping_new[!(mapping_new$value == 0),]
+# mapping_new[,3] <- NULL 'or' mapping_new <- mapping_new[, -3]
 
 mapping$sector_names <-
   names(mapping)[-1][apply(mapping[2:10], 1, function(x)
     which(x == "1"))]
+
 mapping[, 2:10] <-
   NULL #Removing wide columns from mapping.csv as they are not reqd anymore
 
@@ -345,7 +347,7 @@ master_frame3 <-
 #english speaking countries (using dataframe eng_speaking_countries_sorted)
 # All this is done thru loop to scale in future (suppose analysis..
 # ..needs to be done for top 5 countries etc., it can be easily done
-#Similar code can be used at other places (written as for to make it clear)
+#Similar code can be used at other places (written as for loop to make it clear)
 for (i in 1:nrow(eng_speaking_countries_sorted)) {
   nam <- paste("D", i, sep = "")
   df <-
