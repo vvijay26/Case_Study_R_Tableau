@@ -385,7 +385,7 @@ D1_group_by_sector <-  setNames(
     FUN = sum,
     na.rm = "TRUE"
   ),
-  c("sector_names", "Raised_Amount_USD")
+  c("sector_names", "Aggregate_USD")
 )
 
 D1_count_by_sector <- setNames(data.frame(table(D1$sector_names)),
@@ -405,7 +405,7 @@ D2_group_by_sector <-  setNames(
     FUN = sum,
     na.rm = "TRUE"
   ),
-  c("sector_names", "Raised_Amount_USD")
+  c("sector_names", "Aggregate_USD")
 )
 
 D2_count_by_sector <- setNames(data.frame(table(D2$sector_names)),
@@ -424,7 +424,7 @@ D3_group_by_sector <-  setNames(
     FUN = sum,
     na.rm = "TRUE"
   ),
-  c("sector_names", "Raised_Amount_USD")
+  c("sector_names", "Aggregate_USD")
 )
 
 D3_count_by_sector <- setNames(data.frame(table(D3$sector_names)),
@@ -484,3 +484,5 @@ if (sum(D1$raised_amount_usd, na.rm = TRUE) == 422510842796
 } else {
   cat('!!!****ISSUE****!!!')
 }
+
+
