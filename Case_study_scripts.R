@@ -40,7 +40,7 @@ str(rounds2)
 
 #Case Study questions
 #1.1- Data cleaning
-#1 - How many unique companies are present in rounds2?
+#How many unique companies are present in rounds2?
 # Answer - 66368
 
 # tolower is used to make the permalink case
@@ -52,14 +52,14 @@ companies$permalink <- tolower(companies$permalink)
 
 length(unique(rounds2$company_permalink))
 
-#2 - How many unique companies are present in companies?
+#1.2 How many unique companies are present in companies?
 # Answer - 66368
 length(unique(companies$permalink))
 
-#3 - In the companies data frame, which column can be used as the unique key for each company? Write the name of the column.
+#1.3 - In the companies data frame, which column can be used as the unique key for each company? Write the name of the column.
 companies$permalink
 
-#4 - Are there any companies in the rounds2 file which are not present in companies?
+#1.4 - Are there any companies in the rounds2 file which are not present in companies?
 # Answer yes or no: Y/N
 # (Answer is NO)
 
@@ -85,7 +85,7 @@ master_frame <-
 # Answer is NO
 which(is.na(master_frame$name) == "TRUE")
 
-#5 Merge the two data frames so that all variables (columns) in the companies
+#1.5 Merge the two data frames so that all variables (columns) in the companies
 #frame are added to the rounds2 data frame. Name the merged frame master_frame.
 #How many observations are present in master_frame?
 
@@ -118,6 +118,9 @@ master_frame_rollup_raised_amt <-
     c("Funding_Round_Type", "Raised_Amount_USD")
   )
 
+# Filter on the 4 investement types (as asked in checkpoint 2)
+# Calculate the average investment amount for each of the four funding types 
+# (venture, angel, seed, and private equity) and report the answers in Table 2.1
 master_frame_funding_type <- subset(
   master_frame_rollup_raised_amt,
   master_frame_rollup_raised_amt$Funding_Round_Type
@@ -130,6 +133,12 @@ master_frame_funding_type <- subset(
   == "private_equity"
 )
 
+# 2.2
+#Based on the average investment amount calculated above, 
+# which investment type do you think is the most suitable for Spark Funds?
+filter(master_frame_funding_type, Raised_Amount_USD >= 5000000 & Raised_Amount_USD <= 15000000)
+
+# ANSWER - "VENTURE" , as its the only one between 5 and 15 M USD.
 
 ##########################################
 #######Checkpoint 2 End###################
@@ -180,6 +189,7 @@ venture_records_by_country_non_blanks <-
 #Below packages need to be installed (if not available, a one time activity)
 # install.packages(pkgs="plyr")
 library(plyr)
+library(dplyr)
 
 #Sort the venture funding amounts in descending order by country
 venture_records_by_country_non_blanks_desc_amt <-
@@ -256,7 +266,7 @@ master_frame$primary_category <-
   str_split_fixed(master_frame$category_list,
                   "\\|", 3)[, 1]
 
-#4.2 2.	Use the mapping file 'mapping.csv' to map each primary sector to
+#2 2.	Use the mapping file 'mapping.csv' to map each primary sector to
 #one of the eight main sectors (Note that ‘Others’ is also considered
 # one of the main sectors)
 
@@ -270,6 +280,24 @@ mapping <-
     sep = ",",
     check.names = FALSE
   )
+
+# The mapping.csv file provided has an Issue, the letters "na"
+# have been replaced by "0" for some reason in the first column (category_list). 
+# These need to be corrected. Except for "Enterprise 2.0"
+# https://learn.upgrad.com/v/course/113/question/57073
+
+library(stringr)
+
+# to convert Strings like "A0lytics" to "Analytics"
+mapping$category_list <- str_replace_all(mapping$category_list, "0", "na")
+
+#to ignore Enterprise 2.0
+mapping$category_list <- str_replace_all(mapping$category_list, "\\.na", ".0")
+
+#Convert Categories with first 2 characters as "na" to "Na" - sentence case
+
+mapping$category_list <- str_replace_all(mapping$category_list, "^na", "Na")
+
 
 #Add sector names in mapping file as a column
 # Another way to achieve this is by using "gather" function (needs tidyr package)
@@ -333,14 +361,19 @@ master_frame_funding_type[which(
 #Store funding type in FT variable
 FT <-
   master_frame_funding_type[which(
-    master_frame_funding_type$Raised_Amount_USD > 5000000 &
-      master_frame_funding_type$Raised_Amount_USD < 15000000
+    master_frame_funding_type$Raised_Amount_USD >= 5000000 &
+      master_frame_funding_type$Raised_Amount_USD <= 15000000
   ),][1, 1]
 
-#Subset master_frame2(with orimary sector info) into only FT type
-# and store in master_frame3
+# Filter master_frame2(with orimary sector info) into only FT type
+# and store in master_frame3. Also filter only those records that
+# have each round within 5 to 15 million USD (As Spark funds is only
+# concerned with funding rounds within that range).
 master_frame3 <-
-  subset(master_frame2, master_frame2$funding_round_type == FT)
+  filter(master_frame2, funding_round_type == FT &
+           raised_amount_usd >= 5000000 &
+           raised_amount_usd <= 15000000
+         )
 
 #Create D1, D2 and D3 data frames dynamically and subset
 #the master_frame3 into D1, D2 and D3 depending on top 3
@@ -366,8 +399,8 @@ for (i in 1:nrow(eng_speaking_countries_sorted)) {
 #   in a separate column
 #•	The total amount invested in each main sector in a separate column
 
-#!!!Since some categories like Analytics have typo in mapping.csv,
-# (present as "A0lytics"), hence the sector will be NA for such records.
+#!!!Since some categories could have missing mapping in mapping.csv,
+# hence the sector will be NA for such records.
 # Replacing them with Blanks_updated (to differentiate from Blanks)
 D1$sector_names[is.na(D1$sector_names)] <- "Blanks_updated"
 
@@ -444,6 +477,114 @@ D3 <-
 # + the total count of investments for each main sector in a separate column
 # + the total amount invested in each main sector in a separate column
 
+# Checkpoint 5 Answers
+-----------------------
+#5.1 Total number of Investments (count)
+  
+  sum(D1_count_by_sector$count_of_inv)
+  sum(D2_count_by_sector$count_of_inv)
+  sum(D3_count_by_sector$count_of_inv)
+  
+#5.2 Total amount of investment (USD)
+  
+  sum(D1_group_by_sector$Aggregate_USD)
+  sum(D2_group_by_sector$Aggregate_USD)
+  sum(D3_group_by_sector$Aggregate_USD)
+  
+#5.3 Top Sector name (no. of investment-wise)
+#5.6 Number of investments in top sector (3)
+  top_D1_sector_nbr <- arrange(D1_count_by_sector,desc(count_of_inv))[1,]
+  top_D2_sector_nbr <- arrange(D2_count_by_sector,desc(count_of_inv))[1,]
+  top_D3_sector_nbr <- arrange(D3_count_by_sector,desc(count_of_inv))[1,]
+  
+#5.4 Second Sector name (no. of investment-wise)
+#5.7 Number of investments in second sector (4)
+  second_D1_sector_nbr <- arrange(D1_count_by_sector,desc(count_of_inv))[2,]
+  second_D2_sector_nbr <- arrange(D2_count_by_sector,desc(count_of_inv))[2,]
+  second_D3_sector_nbr <- arrange(D3_count_by_sector,desc(count_of_inv))[2,]
+  
+  
+#5.5 Third Sector name (no. of investment-wise)
+#5.8 Number of investments in third sector (5)
+  third_D1_sector_nbr <- arrange(D1_count_by_sector,desc(count_of_inv))[3,]
+  third_D2_sector_nbr <- arrange(D2_count_by_sector,desc(count_of_inv))[3,]
+  third_D3_sector_nbr <- arrange(D3_count_by_sector,desc(count_of_inv))[3,]
+  
+  
+#5.9 For point 3 (top sector count-wise), which company received the highest investment?
+  
+  #Subset D1 to keep only top sector rows.
+  D1_subset_top_sector = filter(D1,sector_names == top_D1_sector_nbr[1,1]) 
+  #Aggregate by company permalink for top sector
+  D1_funding_by_company <- setNames(aggregate(D1_subset_top_sector$raised_amount_usd,by= list(D1_subset_top_sector$company_permalink),FUN=sum,na.rm=TRUE),c("Permalink","Total_inv"))
+  #Sort by descending total investment in a company
+  D1_top_funded_amount <- arrange(D1_funding_by_company,desc(Total_inv))
+  #Reason for filtering like this is , there may be more than 1 company, so we cant just sort desc and pick 1
+  D1_top_companies <- filter(D1_funding_by_company,Total_inv == D1_top_funded_amount[1,2])
+  D1_top_company_name <- filter(D1,D1$company_permalink == D1_top_companies$Permalink)[1,"name"]
+  
+  #similarly for d2 and d3....
+  
+  
+  #Subset D2 to keep only top sector rows.
+  D2_subset_top_sector = filter(D2,sector_names == top_D2_sector_nbr[1,1]) 
+  #Aggregate by company permalink for top sector
+  D2_funding_by_company <- setNames(aggregate(D2_subset_top_sector$raised_amount_usd,by= list(D2_subset_top_sector$company_permalink),FUN=sum,na.rm=TRUE),c("Permalink","Total_inv"))
+  #Sort by descending total investment in a company
+  D2_top_funded_amount <- arrange(D2_funding_by_company,desc(Total_inv))
+  #Reason for filtering like this is , there may be more than 1 company, so we cant just sort desc and pick 1
+  D2_top_companies <- filter(D2_funding_by_company,Total_inv == D2_top_funded_amount[1,2])
+  D2_top_company_name <- filter(D2,D2$company_permalink == D2_top_companies$Permalink)[1,"name"]
+
+  #and D3...  
+  
+  
+  #Subset D3 to keep only top sector rows.
+  D3_subset_top_sector = filter(D3,sector_names == top_D3_sector_nbr[1,1]) 
+  #Aggregate by company permalink for top sector
+  D3_funding_by_company <- setNames(aggregate(D3_subset_top_sector$raised_amount_usd,by= list(D3_subset_top_sector$company_permalink),FUN=sum,na.rm=TRUE),c("Permalink","Total_inv"))
+  #Sort by descending total investment in a company
+  D3_top_funded_amount <- arrange(D3_funding_by_company,desc(Total_inv))
+  #Reason for filtering like this is , there may be more than 1 company, so we cant just sort desc and pick 1
+  D3_top_companies <- filter(D3_funding_by_company,Total_inv == D3_top_funded_amount[1,2])
+  D3_top_company_name <- filter(D3,D3$company_permalink == D3_top_companies$Permalink)[1,"name"]
+  
+#5.10 For point 4 (second best sector count-wise), which company received the highest investment?
+  
+  
+  #Subset D1 to keep only second sector rows.
+  D1_subset_second_sector = subset(D1,D1$sector_names == second_D1_sector_nbr[1,1])
+  #Aggregate by company permalink for second sector
+  D1_funding_by_company <- setNames(aggregate(D1_subset_second_sector$raised_amount_usd,by= list(D1_subset_second_sector$company_permalink),FUN=sum,na.rm=TRUE),c("Permalink","Total_inv"))
+  #Sort by descending total investment in a company
+  D1_second_funded_amount <- arrange(D1_funding_by_company,desc(Total_inv))
+  #Reason for filtering like this is , there may be more than 1 company, so we cant just sort desc and pick 1
+  D1_second_companies <- filter(D1_funding_by_company,Total_inv == D1_second_funded_amount[1,2])
+  D1_second_company_name <- filter(D1,D1$company_permalink == D1_second_companies$Permalink)[1,"name"]
+  
+  
+  #Subset D2 to keep only second sector rows.
+  D2_subset_second_sector = subset(D2,D2$sector_names == second_D2_sector_nbr[1,1])
+  #Aggregate by company permalink for second sector
+  D2_funding_by_company <- setNames(aggregate(D2_subset_second_sector$raised_amount_usd,by= list(D2_subset_second_sector$company_permalink),FUN=sum,na.rm=TRUE),c("Permalink","Total_inv"))
+  #Sort by descending total investment in a company
+  D2_second_funded_amount <- arrange(D2_funding_by_company,desc(Total_inv))
+  #Reason for filtering like this is , there may be more than 1 company, so we cant just sort desc and pick 1
+  D2_second_companies <- filter(D2_funding_by_company,Total_inv == D2_second_funded_amount[1,2])
+  D2_second_company_name <- filter(D2,D2$company_permalink == D2_second_companies$Permalink)[1,"name"]
+  
+  
+  
+  #Subset D3 to keep only second sector rows.
+  D3_subset_second_sector = subset(D3,D3$sector_names == second_D3_sector_nbr[1,1])
+  #Aggregate by company permalink for second sector
+  D3_funding_by_company <- setNames(aggregate(D3_subset_second_sector$raised_amount_usd,by= list(D3_subset_second_sector$company_permalink),FUN=sum,na.rm=TRUE),c("Permalink","Total_inv"))
+  #Sort by descending total investment in a company
+  D3_second_funded_amount <- arrange(D3_funding_by_company,desc(Total_inv))
+  #Reason for filtering like this is , there may be more than 1 company, so we cant just sort desc and pick 1
+  D3_second_companies <- filter(D3_funding_by_company,Total_inv == D3_second_funded_amount[1,2])
+  D3_second_company_name <- filter(D3,D3$company_permalink == D3_second_companies$Permalink)[1,"name"]
+  
 
 ##########################################
 #######Checkpoint 5 End###################
@@ -459,7 +600,6 @@ D3 <-
 ##########################################
 #######Checkpoint 6 End###################
 ##########################################
-
 
 #-----***Write Unit Tests***---------
 #These tests are written by analysing the data of companies
@@ -477,12 +617,10 @@ D3 <-
 # USA total 422510842796.00
 #
 l = ls()
-if (sum(D1$raised_amount_usd, na.rm = TRUE) == 422510842796
-    & sum(D2$raised_amount_usd, na.rm = TRUE) == 20245627416
-    & sum(D3$raised_amount_usd, na.rm = TRUE) == 14391858718) {
+if (sum(D1$raised_amount_usd, na.rm = TRUE) == 108531347515
+    & sum(D2$raised_amount_usd, na.rm = TRUE) == 5436843539
+    & sum(D3$raised_amount_usd, na.rm = TRUE) == 2976543602) {
   cat('Raised amounts for D1/D2/D3 dataframe look fine!!!')
 } else {
   cat('!!!****ISSUE****!!!')
 }
-
-
