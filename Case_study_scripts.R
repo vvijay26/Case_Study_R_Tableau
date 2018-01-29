@@ -399,14 +399,15 @@ for (i in 1:nrow(eng_speaking_countries_sorted)) {
 #   in a separate column
 #•	The total amount invested in each main sector in a separate column
 
-#!!!Since some categories could have missing mapping in mapping.csv,
-# hence the sector will be NA for such records.
-# Replacing them with Blanks_updated (to differentiate from Blanks)
-D1$sector_names[is.na(D1$sector_names)] <- "Blanks_updated"
+#!!!There could be categories in master_frame 
+# which have no mapping in mapping.csv
+# Replacing them with Blanks (As of now in the current D1, D2, D3, 
+# only D1 has 1 record for which sector_name is blanks)
+# Category - biotechnology and semiconductor, Name - HealthTell
 
-D2$sector_names[is.na(D2$sector_names)] <- "Blanks_updated"
-
-D3$sector_names[is.na(D3$sector_names)] <- "Blanks_updated"
+D1[which(is.na(D1$sector_names)),1] <- "Blanks"
+D2[which(is.na(D2$sector_names)),1] <- "Blanks"
+D3[which(is.na(D3$sector_names)),1] <- "Blanks"
 
 # let's create new Dataframes for each of the 3 dataframes to store
 # aggregate by sectors. Later we can merge it to D1, D2, D3
