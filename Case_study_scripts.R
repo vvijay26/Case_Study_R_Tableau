@@ -575,7 +575,6 @@ D3 <-
   D2_second_company_name <- filter(D2,D2$company_permalink == D2_second_companies$Permalink)[1,"name"]
   
   
-  
   #Subset D3 to keep only second sector rows.
   D3_subset_second_sector = subset(D3,D3$sector_names == second_D3_sector_nbr[1,1])
   #Aggregate by company permalink for second sector
@@ -603,25 +602,25 @@ D3 <-
 ##########################################
 
 #-----***Write Unit Tests***---------
-#These tests are written by analysing the data of companies
+# These tests are written by analysing the data of companies
 # and rounds2 using excel and then populating certain constants.
 # These constants are then compared with the output of the R code
 # above. If they match, then "SUCCESS" else "FAILURE"
 # These kind of tests ensure that any code change above (say done
 # for performance or formatting etc.) doesnt change the expected
 # results.
-
-## !*!*!*!*!*!*! MORE TESTS TO BE ADDED  !*!*!*!*!*!*!
+# Chose type is venture (As per analysis done on xls)
 # For Venture funding type
-# IND total 14391858718
-# GBR total 20245627416.00
-# USA total 422510842796.00
+# IND total 2976543602 
+# GBR total 5436843539
+# USA total 108531347515
 #
 l = ls()
 if (sum(D1$raised_amount_usd, na.rm = TRUE) == 108531347515
     & sum(D2$raised_amount_usd, na.rm = TRUE) == 5436843539
-    & sum(D3$raised_amount_usd, na.rm = TRUE) == 2976543602) {
-  cat('Raised amounts for D1/D2/D3 dataframe look fine!!!')
+    & sum(D3$raised_amount_usd, na.rm = TRUE) == 2976543602
+    & FT == "venture") {
+  cat('Code looks fine')
 } else {
   cat('!!!****ISSUE****!!!')
 }
