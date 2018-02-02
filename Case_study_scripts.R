@@ -1,4 +1,14 @@
 #Case Study
+#Below packages need to be installed (if not available, a one time activity)
+# install.packages(pkgs="plyr")
+# install.packages(pkgs="dplyr")
+# install.packages(pkgs="stringr")
+# install.packages(pkgs="tidyr")
+
+library(plyr)
+library(dplyr)
+library(stringr)
+library(tidyr)
 
 ##########################################
 #######Checkpoint 1 Start#################
@@ -186,11 +196,6 @@ venture_records_by_country_non_blanks <-
 #We use arrange function from plyr package, as per CRAN community, this seems to
 # be the fastest way to sort a data.frame
 
-#Below packages need to be installed (if not available, a one time activity)
-# install.packages(pkgs="plyr")
-library(plyr)
-library(dplyr)
-
 #Sort the venture funding amounts in descending order by country
 venture_records_by_country_non_blanks_desc_amt <-
   arrange(venture_records_by_country_non_blanks,
@@ -215,10 +220,9 @@ top9 <- head(venture_records_by_country_non_blanks_desc_amt, n = 9)
 #JPN	-		n
 
 #Create a dataframe for english speaking countries
-#As a sample, 4 countries are present, can be increased if necessary
-country_name <- c("USA", "CHN", "GBR", "IND")
+country_name <- c("USA","CHN","GBR","IND","CAN","FRA","ISR","DEU","JPN")
 
-eng_countries <- c("y", "n", "y", "y")
+eng_countries <- c("y", "n", "y", "y","y","y","n","n","n")
 
 eng_speaking <- data.frame(country_name, eng_countries)
 
@@ -233,10 +237,10 @@ merged_countries <-
 eng_speaking_countries <-
   subset(merged_countries, merged_countries$eng_countries == "y")
 
-#Sort the output (Descending order of Venture funding by country)
+#Sort the output (Descending order of Venture funding by country and take top 3)
 eng_speaking_countries_sorted <-
-  arrange(eng_speaking_countries,
-          desc(eng_speaking_countries$Raised_Amount_USD))
+  head(arrange(eng_speaking_countries,
+          desc(eng_speaking_countries$Raised_Amount_USD)),n=3)
 
 #output of eng_speaking_countries_sorted
 #Country_Code Raised_Amount_USD eng_countries
@@ -260,14 +264,12 @@ eng_speaking_countries_sorted <-
 # Since pipe - | is a special character, it needs to be escaped
 # The primary category is added as the 16th column in master_frame
 
-library(stringr)
-
 master_frame$primary_category <-
   str_split_fixed(master_frame$category_list,
                   "\\|", 3)[, 1]
 
 #2 2.	Use the mapping file 'mapping.csv' to map each primary sector to
-#one of the eight main sectors (Note that ‘Others’ is also considered
+#one of the eight main sectors (Note that 'Others' is also considered
 # one of the main sectors)
 
 #Step 1 - load the mapping file to a data.frame
@@ -286,8 +288,6 @@ mapping <-
 # These need to be corrected. Except for "Enterprise 2.0"
 # https://learn.upgrad.com/v/course/113/question/57073
 
-library(stringr)
-
 # to convert Strings like "A0lytics" to "Analytics"
 mapping$category_list <- str_replace_all(mapping$category_list, "0", "na")
 
@@ -302,8 +302,10 @@ mapping$category_list <- str_replace_all(mapping$category_list, "^na", "Na")
 #Add sector names in mapping file as a column
 # Another way to achieve this is by using "gather" function (needs tidyr package)
 # mapping_new <- gather(data = mapping, key = sector, value = value, "Automotive & Sports":"Social, Finance, Analytics, Advertising")
-# mapping_new <- subset(mapping_new,mapping_new$value == "1")  'or' mapping_new <- mapping_new[!(mapping_new$value == 0),]
-# mapping_new[,3] <- NULL 'or' mapping_new <- mapping_new[, -3]
+# mapping_new <- subset(mapping_new,mapping_new$value == "1")  
+#'above step can also be done using - > mapping_new <- mapping_new[!(mapping_new$value == 0),]
+# mapping_new[,3] <- NULL 
+#'above step can also be done using - >  mapping_new <- mapping_new[, -3]
 
 mapping$sector_names <-
   names(mapping)[-1][apply(mapping[2:10], 1, function(x)
@@ -338,13 +340,9 @@ master_frame2 <-
 ##########################################
 
 #Data extracted till now -
-# Dataframe with companys main sector mapped - master_frame2
-# Top 3 english speaking countries - eng_speaking_countries_sorted (usa/gbr/ind)
-# Funding type - Venture (the below command will also extract it)
-master_frame_funding_type[which(
-  master_frame_funding_type$Raised_Amount_USD > 5000000 &
-    master_frame_funding_type$Raised_Amount_USD < 15000000
-),][1, 1]
+# Dataframe with companys main sector mapped is present inm"aster_frame2"
+# Top 3 english (usa/gbr/ind) speaking countries is present in  "eng_speaking_countries_sorted" 
+# Funding type - Venture 
 
 #As part of checkpoint 5, Now, the aim is to find out the most
 #heavily invested main sectors in each of the three countries
@@ -354,18 +352,18 @@ master_frame_funding_type[which(
 #of the three countries containing the observations of funding
 #type <FT> falling within the 5-15 million USD range. The
 #three data frames should contain:
-#•	All the columns of the master_frame along with the primary sector and the main sector
-#•	The total number (or count) of investments for each main sector in a separate column
-#•	The total amount invested in each main sector in a separate column
+#.	All the columns of the master_frame along with the primary sector and the main sector
+#.	The total number (or count) of investments for each main sector in a separate column
+#.	The total amount invested in each main sector in a separate column
 
-#Store funding type in FT variable
+#Store funding type in FT variable (in this case it would be "venture")
 FT <-
   master_frame_funding_type[which(
     master_frame_funding_type$Raised_Amount_USD >= 5000000 &
       master_frame_funding_type$Raised_Amount_USD <= 15000000
   ),][1, 1]
 
-# Filter master_frame2(with orimary sector info) into only FT type
+# Filter master_frame2(with primary sector info) into only FT type
 # and store in master_frame3. Also filter only those records that
 # have each round within 5 to 15 million USD (As Spark funds is only
 # concerned with funding rounds within that range).
@@ -395,9 +393,9 @@ for (i in 1:nrow(eng_speaking_countries_sorted)) {
 }
 
 #The following 2 steps remain -
-#•	The total number (or count) of investments for each main sector
+#.	The total number (or count) of investments for each main sector
 #   in a separate column
-#•	The total amount invested in each main sector in a separate column
+#.	The total amount invested in each main sector in a separate column
 
 #!!!There could be categories in master_frame 
 # which have no mapping in mapping.csv
@@ -619,7 +617,10 @@ l = ls()
 if (sum(D1$raised_amount_usd, na.rm = TRUE) == 108531347515
     & sum(D2$raised_amount_usd, na.rm = TRUE) == 5436843539
     & sum(D3$raised_amount_usd, na.rm = TRUE) == 2976543602
-    & FT == "venture") {
+    & FT == "venture"
+    & eng_speaking_countries_sorted[1,1] == "USA"
+    & eng_speaking_countries_sorted[2,1] == "GBR"
+    & eng_speaking_countries_sorted[3,1] == "IND") {
   cat('Code looks fine')
 } else {
   cat('!!!****ISSUE****!!!')
